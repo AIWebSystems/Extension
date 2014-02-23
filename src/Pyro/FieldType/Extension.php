@@ -38,7 +38,7 @@ class Extension extends FieldTypeAbstract
      * @var array
      */
     public $custom_parameters = array(
-        'manager',
+        'manager_class',
     );
 
     /**
@@ -58,7 +58,7 @@ class Extension extends FieldTypeAbstract
      */
     public function paramManager($value = null)
     {
-        return form_input('manager', $value);
+        return form_input('manager_class', $value);
     }
 
     /**
@@ -68,12 +68,12 @@ class Extension extends FieldTypeAbstract
      */
     public function formInput()
     {
-        $manager = $this->getParameter('manager');
+        $managerClass = $this->getParameter('manager_class');
 
-        $manager = new $manager;
+        $managerClass = new $managerClass;
 
-        $manager::init('payments', 'gateway');
-        $extensions = $manager::getAllExtensions();
+        $managerClass::init('payments', 'gateway');
+        $extensions = $managerClass::getAllExtensions();
 
         $options = array();
 
