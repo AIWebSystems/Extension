@@ -69,10 +69,10 @@ class Extension extends FieldTypeAbstract
     public function formInput()
     {
         $managerClass = $this->getParameter('manager_class');
-
         $managerClass = new $managerClass;
 
-        $managerClass::init('payments', 'gateway');
+        $managerClass::init($this->getParameter('module'), $this->getParameter('extension_type'));
+
         $extensions = $managerClass::getAllExtensions();
 
         $options = array();
@@ -82,5 +82,28 @@ class Extension extends FieldTypeAbstract
         }
 
         return form_dropdown($this->formSlug, $options, $this->value);
+    }
+
+    /**
+     * Filter input
+     *
+     * @return array
+     */
+    public function filterInput()
+    {
+        $managerClass = $this->getParameter('manager_class');
+        $managerClass = new $managerClass;
+
+        $managerClass::init($this->getParameter('module'), $this->getParameter('extension_type'));
+
+        $extensions = $managerClass::getAllExtensions();
+
+        $options = array(null => $this->getParameter('placeholder', $this->getField()->field_name));
+
+        foreach ($extensions as $extension) {
+            $options[$extension->slug] = $extension->name;
+        }
+
+        return form_dropdown($this->getFilterSlug('is'), $options, $this->getFilterValue('is'));
     }
 }
