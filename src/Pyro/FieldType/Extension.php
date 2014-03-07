@@ -52,14 +52,11 @@ class Extension extends FieldTypeAbstract
     );
 
     /**
-     * Manager
+     * Initialized
      *
-     * @return string
+     * @var array
      */
-    public function paramManager($value = null)
-    {
-        return form_input('manager_class', $value);
-    }
+    protected $initialized = array();
 
     /**
      * Form input
@@ -105,5 +102,26 @@ class Extension extends FieldTypeAbstract
         }
 
         return form_dropdown($this->getFilterSlug('is'), $options, $this->getFilterValue('is'));
+    }
+
+    /**
+     * Data output
+     *
+     * @return mixed
+     */
+    public function dataOutput()
+    {
+        if (!isset($this->initialized[$this->getParameter('manager_class')])) {
+            $managerClass = $this->getParameter('manager_class');
+            $managerClass = new $managerClass;
+
+            $managerClass::init($this->getParameter('module'), $this->getParameter('extension_type'));
+
+            $this->initialized[$this->getParameter('manager_class')] = $managerClass;
+        } else {
+            $managerClass = $this->initialized[$this->getParameter('manager_class')];
+        }
+
+        return $managerClass::getExtension($this->value);
     }
 }
