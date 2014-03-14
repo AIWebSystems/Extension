@@ -2,13 +2,6 @@
 
 use Pyro\Module\Streams\FieldType\FieldTypeAbstract;
 
-/**
- * Extension Field Type
- *
- * @author      Ryan Thompson - AI Web Systems, Inc.
- * @copyright   Copyright (c) 2008 - 2014, AI Web Systems, Inc.
- * @link        http://www.aiwebsystems.com/
- */
 class Extension extends FieldTypeAbstract
 {
     /**
@@ -19,7 +12,7 @@ class Extension extends FieldTypeAbstract
     public $field_type_slug = 'extension';
 
     /**
-     * Database column type
+     * DB col type
      *
      * @var bool
      */
@@ -65,20 +58,7 @@ class Extension extends FieldTypeAbstract
      */
     public function formInput()
     {
-        $managerClass = $this->getParameter('manager_class');
-        $managerClass = new $managerClass;
-
-        $managerClass::init($this->getParameter('module'), $this->getParameter('extension_type'));
-
-        $extensions = $managerClass::getAllExtensions();
-
-        $options = array();
-
-        foreach ($extensions as $extension) {
-            $options[$extension->slug] = $extension->name;
-        }
-
-        return form_dropdown($this->formSlug, $options, $this->value);
+        return form_dropdown($this->formSlug, $this->getOptions(), $this->value);
     }
 
     /**
@@ -88,17 +68,10 @@ class Extension extends FieldTypeAbstract
      */
     public function filterInput()
     {
-        $managerClass = $this->getParameter('manager_class');
-        $managerClass = new $managerClass;
+        $options = $this->getOptions();
 
-        $managerClass::init($this->getParameter('module'), $this->getParameter('extension_type'));
-
-        $extensions = $managerClass::getAllExtensions();
-
-        $options = array(null => $this->getParameter('placeholder', $this->getField()->field_name));
-
-        foreach ($extensions as $extension) {
-            $options[$extension->slug] = $extension->name;
+        if ($placeholder = $this->getParameter('filter_placeholder')) {
+            $options = array('-----' => $placeholder) + $options;
         }
 
         return form_dropdown($this->getFilterSlug('is'), $options, $this->getFilterValue('is'));
@@ -111,6 +84,38 @@ class Extension extends FieldTypeAbstract
      */
     public function dataOutput()
     {
+        $managerClass = $this->getManagerClass();
+
+        return $managerClass::getExtension($this->value);
+    }
+
+    /**
+     * Get options
+     *
+     * @return array
+     */
+    protected function getOptions()
+    {
+        $managerClass = $this->getManagerClass();
+
+        $extensions = $managerClass::getAllExtensions();
+
+        $options = array();
+
+        foreach ($extensions as $extension) {
+            $options[$extension->slug] = $extension->name;
+        }
+
+        return $options;
+    }
+
+    /**
+     * Get manager class
+     *
+     * @return object
+     */
+    protected function getManagerClass()
+    {
         if (!isset($this->initialized[$this->getParameter('manager_class')])) {
             $managerClass = $this->getParameter('manager_class');
             $managerClass = new $managerClass;
@@ -118,10 +123,8 @@ class Extension extends FieldTypeAbstract
             $managerClass::init($this->getParameter('module'), $this->getParameter('extension_type'));
 
             $this->initialized[$this->getParameter('manager_class')] = $managerClass;
-        } else {
-            $managerClass = $this->initialized[$this->getParameter('manager_class')];
         }
 
-        return $managerClass::getExtension($this->value);
+        return $this->initialized[$this->getParameter('manager_class')];
     }
 }
