@@ -86,7 +86,11 @@ class Extension extends FieldTypeAbstract
     {
         $managerClass = $this->getManagerClass();
 
-        return $managerClass::getExtension($this->value);
+        if ($this->value and $extension = $managerClass::getExtension($this->value)) {
+            return $extension;
+        }
+
+        return null;
     }
 
     /**
@@ -116,15 +120,11 @@ class Extension extends FieldTypeAbstract
      */
     protected function getManagerClass()
     {
-        if (!isset($this->initialized[$this->getParameter('manager_class')])) {
-            $managerClass = $this->getParameter('manager_class');
-            $managerClass = new $managerClass;
+        $managerClass = $this->getParameter('manager_class');
+        $managerClass = new $managerClass;
 
-            $managerClass::init($this->getParameter('module'), $this->getParameter('extension_type'));
+        $managerClass::init($this->getParameter('module'), $this->getParameter('extension_type'), true);
 
-            $this->initialized[$this->getParameter('manager_class')] = $managerClass;
-        }
-
-        return $this->initialized[$this->getParameter('manager_class')];
+        return $managerClass;
     }
 }
